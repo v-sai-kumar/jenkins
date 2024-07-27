@@ -45,7 +45,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to kubernetes container ') {
+        stage('Deploy to kubernetes cluster ') {
             steps {
                 script {
                     withCredentials([file(credentialsId: KUBECONFIG_CREDENTIALS, variable: 'KUBECONFIG')]) {
