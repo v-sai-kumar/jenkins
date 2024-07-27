@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_HUB_CREDENTIALS = 'gitid' // ID of Docker Hub credentials stored in Jenkins
         DOCKER_IMAGE = 'sai1421/java:latest' // Replace with your Docker Hub username and image name
+        KUBECONFIG_CREDENTIALS = 'kubeconfig-credentials-id' // Jenkins credentials ID for kubeconfig
     }
 
     stages {
@@ -44,13 +45,11 @@ pipeline {
             }
         }
 
-        stage('Deploy Docker Container') {
+        stage('Deploy to kubernetes container ') {
             steps {
                 script {
-                    // Stop and remove the old container if it exists
-                    sh 'docker stop mycon || true && docker rm mycon || true'
-                    // Run the new container
-                    sh 'docker run -d --name mycon -p $DOCKER_IMAGE'
+                    withCredentials([file(credentialsId: KUBECONFIG_CREDENTIALS, variable: 'KUBECONFIG')]) {
+                        sh 'kubectl apply -f k8s/deployment.yaml'
                 }
             }
         }
@@ -59,5 +58,12 @@ pipeline {
         always {
             cleanWs() // Clean workspace after the build to reduce storage issue
         }
+        success {
+            echo "cleared the workspace after build"
+        }
+        onfailure{
+            echo "failed to clear workspace after the build "
+        }
     }
 }
+
